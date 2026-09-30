@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Conversinha Bet — 1v1 | Protótipo</title>
+<style>
+  :root{
+    --bg:#0b0e17; --bg2:#111625; --card:#161c30; --card2:#1c2338;
+    --line:rgba(255,255,255,.08); --txt:#eef1ff; --muted:#9aa3c0;
+    --green:#22e58c; --red:#ff5470; --gold:#ffcf4d; --blue:#5b8cff; --purple:#a78bfa;
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(1200px 600px at 20% -10%,#1d2550 0%,transparent 60%),radial-gradient(900px 500px at 90% 0%,#2a1550 0%,transparent 55%),var(--bg);color:var(--txt);min-height:100vh}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 60px}
+  header.top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--gold),#ff7a3d 55%,#ff2e7e);display:grid;place-items:center;font-weight:900;font-size:22px;color:#1a0e00;box-shadow:0 8px 30px rgba(255,150,40,.35)}
+  .brand h1{font-size:18px;margin:0;letter-spacing:.4px}
+  .brand small{display:block;color:var(--muted);font-weight:500;letter-spacing:.2px}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);font-size:12.5px;color:var(--muted)}
+  .pill b{color:var(--txt)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+  .saldo-card{background:linear-gradient(135deg,#1c2547,#141a33 60%);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px;position:relative;overflow:hidden}
+  .saldo-card::after{content:"";position:absolute;inset:-40px -40px auto auto;width:220px;height:220px;background:radial-gradient(circle,rgba(255,207,77,.22),transparent 70%)}
+  .saldo-label{color:var(--muted);font-size:12px;letter-spacing:1.4px;text-transform:uppercase}
+  .saldo-valor{font-size:38px;font-weight:900;letter-spacing:-.5px;margin:4px 0}
+  .saldo-valor small{font-size:14px;color:var(--muted);font-weight:600}
+  .btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:14px;cursor:pointer;transition:.18s;color:#0b0e17;background:var(--gold)}
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line)}
+  .btn.blue{background:var(--blue);color:white}
+  .btn.green{background:var(--green)}
+  .btn.red{background:var(--red);color:white}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .btn.big{font-size:15px;padding:15px 20px;width:100%}
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:16px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  .card h2{margin:0 0 4px;font-size:16px}
+  .card p.sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+  label.lbl{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px;letter-spacing:.6px;text-transform:uppercase;font-weight:700}
+  input[type=text],input[type=number]{width:100%;background:#0e1324;border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:13px 14px;font-size:16px;font-weight:700;outline:none}
+  input:focus{border-color:var(--gold)}
+  .quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .quick button{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--txt);border-radius:999px;padding:8px 13px;font-weight:800;cursor:pointer;font-size:13px}
+  .quick button.active{background:var(--gold);color:#1a0e00;border-color:transparent}
+  .sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .side{border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;text-align:center;background:rgba(255,255,255,.03);transition:.15s;user-select:none}
+  .side b{display:block;font-size:15px}
+  .side span{font-size:12px;color:var(--muted)}
+  .side.s1.selected{border-color:var(--blue);background:rgba(91,140,255,.15);box-shadow:0 0 0 3px rgba(91,140,255,.2)}
+  .side.s2.selected{border-color:var(--red);background:rgba(255,84,112,.13);box-shadow:0 0 0 3px rgba(255,84,112,.18)}
+  .side .ball{width:34px;height:34px;border-radius:50%;margin:0 auto 8px;display:grid;place-items:center;font-weight:900}
+  .s1 .ball{background:var(--blue);color:white}.s2 .ball{background:var(--red);color:white}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .filters button{border-radius:999px;padding:9px 14px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);font-weight:800;cursor:pointer;font-size:13px}
+  .filters button.active{background:var(--txt);color:#111}
+  .bets{display:grid;gap:12px}
+  .bet{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px;animation:pop .25s ease}
+  @keyframes pop{from{transform:scale(.98);opacity:0}to{transform:scale(1);opacity:1}}
+  .bet-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .valor{font-size:20px;font-weight:900}
+  .status{font-size:11px;font-weight:900;letter-spacing:.8px;padding:7px 11px;border-radius:999px;text-transform:uppercase}
+  .st-AGUARDANDO_OPONENTE{background:rgba(255,207,77,.16);color:var(--gold);border:1px solid rgba(255,207,77,.35)}
+  .st-EM_ANDAMENTO{background:rgba(91,140,255,.18);color:#9db9ff;border:1px solid rgba(91,140,255,.4);animation:blink 1s infinite}
+  .st-FINALIZADA{background:rgba(34,229,140,.14);color:var(--green);border:1px solid rgba(34,229,140,.3)}
+  @keyframes blink{50%{opacity:.6}}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12.5px}
+  .meta code{background:rgba(0,0,0,.35);padding:3px 8px;border-radius:8px;color:#d6dbf2;font-size:12px}
+  .versus{display:flex;align-items:center;gap:8px}
+  .tag{flex:1;text-align:center;padding:10px;border-radius:12px;font-weight:900;font-size:13px;border:1px solid var(--line)}
+  .tag.l1{background:rgba(91,140,255,.15);border-color:rgba(91,140,255,.4)}
+  .tag.l2{background:rgba(255,84,112,.12);border-color:rgba(255,84,112,.35)}
+  .tag.win{outline:2px solid var(--green);box-shadow:0 0 18px rgba(34,229,140,.35)}
+  .tag small{display:block;font-weight:600;color:var(--muted);font-size:11px;margin-top:3px}
+  .bet-actions{display:flex;gap:8px;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+  .pos{color:var(--green);font-weight:800}.neg{color:var(--red);font-weight:800}
+  .toast-zone{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:grid;gap:8px;z-index:60;width:min(480px,92vw)}
+  .toast{background:#0f1426;border:1px solid var(--line);border-left:4px solid var(--gold);padding:12px 14px;border-radius:12px;font-size:13.5px;box-shadow:0 12px 30px rgba(0,0,0,.5);animation:pop .2s ease}
+  .toast.err{border-left-color:var(--red)}.toast.ok{border-left-color:var(--green)}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;place-items:center;z-index:50;padding:16px}
+  .modal-bg.show{display:grid}
+  .modal{background:linear-gradient(180deg,#1d2545,#11162a);border:1px solid var(--line);border-radius:20px;padding:26px;text-align:center;max-width:420px;width:100%;animation:pop .3s ease}
+  .trofeu{font-size:52px}.modal h3{margin:8px 0;font-size:22px}.modal p{color:var(--muted)}
+  .arco{font-size:12px;color:var(--muted);background:rgba(0,0,0,.3);border:1px dashed var(--line);border-radius:12px;padding:10px;margin-top:12px;text-align:left}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row .btn{flex:1;white-space:nowrap}
+  footer{margin-top:18px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <h1>CONVERSINHA BET · 1v1 <small>protótipo local · backend-ready</small></h1>
+    </div>
+    <div class="pill"><span class="dot"></span> Jogador <b id="playerShort">…</b> <span id="playerFull" style="opacity:.6"></span></div>
+  </header>
+
+  <div class="saldo-card">
+    <div>
+      <div class="saldo-label">Saldo atual</div>
+      <div class="saldo-valor" id="saldoValor">R$ 10,00</div>
+      <div class="pill">ID persistente (UUID) · <b id="playerUuid">…</b></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" id="btnCopyId">Copiar ID</button>
+      <button class="btn ghost" id="btnSimular">🎭 Simular 2º jogador</button>
+      <button class="btn ghost" id="btnTrocar">⇄ Trocar jogador</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- CRIAR APOSTA -->
+    <section class="card">
+      <h2>Criar aposta</h2>
+      <p class="sub">Valor de R$ 1,00 até seu saldo. Escolha um lado. A aposta fica <b>AGUARDANDO OPONENTE</b>.</p>
+
+      <label class="lbl">Valor da aposta</label>
+      <input id="valorInput" type="text" inputmode="numeric" value="R$ 10,00" />
+      <div class="quick">
+        <button data-v="100">R$ 1</button>
+        <button data-v="200">R$ 2</button>
+        <button data-v="500">R$ 5</button>
+        <button data-v="1000" class="active">R$ 10</button>
+        <button id="btnMax">MAX</button>
+      </div>
+
+      <label class="lbl">Escolha seu lado</label>
+      <div class="sides">
+        <div class="side s1 selected" id="side1"><div class="ball">1</div><b>LADO 1</b><span>50% de chance</span></div>
+        <div class="side s2" id="side2"><div class="ball">2</div><b>LADO 2</b><span>50% de chance</span></div>
+      </div>
+
+      <div style="height:12px"></div>
+      <button class="btn big" id="btnCriar">Criar aposta · <span id="btnCriarValor">R$ 10,00</span></button>
+      <div style="height:8px"></div>
+      <div class="row">
+        <button class="btn ghost" id="btnReset">Zerar demo</button>
+        <button class="btn ghost" id="btnRecarregar">+ R$ 10 demo</button>
+      </div>
+      <div class="arco">
+        <b>Como funciona o 1v1:</b><br>
+        A cria aposta de R$ X no LADO 1 → saldo A −= X.<br>
+        B entra com o lado oposto (LADO 2) → saldo B −= X.<br>
+        Pote = 2X. Sorteio 50/50. Vencedor += 2X.
+      </div>
+    </section>
+
+    <!-- LISTA -->
+    <section class="card">
+      <h2>Mesa · apostas disponíveis</h2>
+      <p class="sub">Sincroniza entre abas do mesmo navegador via evento <code>storage</code>. Para internet real, troque o <code>BackendAdapter</code> por <code>fetch()</code>.</p>
+      <div class="filters">
+        <button data-f="abertas" class="active">Abertas</button>
+        <button data-f="minhas">Minhas</button>
+        <button data-f="todas">Todas</button>
+        <button data-f="finalizadas">Finalizadas</button>
+      </div>
+      <div class="bets" id="bets"></div>
+    </section>
+  </div>
+
+  <div style="height:16px"></div>
+  <section class="card">
+    <h2>Histórico das minhas apostas</h2>
+    <p class="sub">Entradas, saídas e resultado. Valores em BRL (centavos internamente).</p>
+    <div style="overflow:auto">
+    <table>
+      <thead><tr><th>ID</th><th>Valor</th><th>Meu lado</th><th>Status</th><th>Resultado</th><th>Quando</th></tr></thead>
+      <tbody id="hist"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <footer>⚠️ Protótipo: <b>localStorage NÃO é carteira segura</b>. Em produção o saldo, apostas, sorteio e pagamento devem ficar no servidor com autenticação e validação. Veja comentários <code>POST /api/...</code> no código.</footer>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="trofeu" id="modalEmoji">🏆</div>
+    <h3 id="modalTitle">Você venceu!</h3>
+    <p id="modalDesc">LADO 1 sorteado. Prêmio creditado.</p>
+    <button class="btn big" id="modalOk">Continuar jogando</button>
+  </div>
+</div>
+
+<div class="toast-zone" id="toasts"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+ * CONVERSINHA BET 1v1 — protótipo em arquivo único (pasta aposta/)
+ *
+ * ARQUITETURA (separada por responsabilidade, pronta p/ backend real):
+ *  1. IdentityService  -> UUID do jogador (futuro: auth/JWT)
+ *  2. WalletService    -> saldo em CENTAVOS (futuro: GET /api/saldo)
+ *  3. BackendAdapter   -> apostas/partidas (futuro: fetch POST/GET /api/*)
+ *  4. MatchEngine      -> sorteio LADO_1/LADO_2 50/50 (futuro: servidor)
+ *  5. HistoryService   -> histórico (futuro: GET /api/historico)
+ *  6. UI               -> render + eventos
+ *
+ * MAPA PARA BACKEND FUTURO:
+ *  POST /api/apostas            -> BackendAdapter.apiCreateBet()
+ *  GET  /api/apostas            -> BackendAdapter.apiListBets()
+ *  POST /api/apostas/:id/entrar -> BackendAdapter.apiJoinBet()
+ *  POST /api/apostas/:id/finalizar -> BackendAdapter.apiFinalizeBet()
+ *  GET  /api/saldo              -> WalletService.apiGetBalance()
+ *  GET  /api/historico          -> HistoryService.apiGetHistory()
+ *
+ * SEGURANÇA: todo débito/crédito/sorteio aqui é CLIENT-SIDE (inseguro).
+ * Em produção: NUNCA confie no navegador; valide saldo, participantes,
+ * status e prêmio no servidor dentro de transação atômica.
+ * ===================================================================== */
+
+// ---------- Constantes / utils ----------
+const INITIAL_BALANCE_CENTS = 1000; // R$ 10,00
+const MIN_BET_CENTS = 100;          // R$ 1,00
+const LS_PLAYER = "cb1v1:player_id";
+const LS_WALLETS = "cb1v1:wallets"; // { uuid: cents }
+const LS_BETS = "cb1v1:bets";       // [ Bet ]
+const LS_KNOWN = "cb1v1:known_players"; // [uuid] p/ simulação local
+
+const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const fmtCents = (c) => BRL.format((c || 0) / 100);
+const oppositeSide = (s) => (s === "LADO_1" ? "LADO_2" : "LADO_1");
+const shortId = (id) => (id || "").slice(0, 8);
+const nowISO = () => new Date().toISOString();
+function uid(prefix) {
+  if (crypto.randomUUID) return prefix + crypto.randomUUID().slice(0, 8);
+  return prefix + Math.random().toString(36).slice(2, 10);
+}
+
+// parse "R$ 10,00" | "10,00" | "10.00" | "10" -> centavos int
+function parseBRLtoCents(str) {
+  if (typeof str !== "string") return NaN;
+  let s = str.trim().replace(/[R$\s]/g, "");
+  if (!s) return NaN;
+  // "1.234,56" -> "1234.56" ; "10.00" mantém
+  if (s.includes(",")) { s = s.replace(/\./g, "").replace(",", "."); }
+  const v = Number(s);
+  if (!Number.isFinite(v)) return NaN;
+  return Math.round(v * 100);
+}
+
+// ---------- 1. IdentityService ----------
+const IdentityService = {
+  getOrCreatePlayerId() {
+    let id = localStorage.getItem(LS_PLAYER);
+    if (!id) {
+      id = crypto.randomUUID ? crypto.randomUUID() : uid("p-");
+      localStorage.setItem(LS_PLAYER, id);
+      this.remember(id);
+    } else {
+      this.remember(id);
+    }
+    return id;
+  },
+  remember(id) {
+    try {
+      const arr = JSON.parse(localStorage.getItem(LS_KNOWN) || "[]");
+      if (!arr.includes(id)) { arr.push(id); localStorage.setItem(LS_KNOWN, JSON.stringify(arr)); }
+    } catch {}
+  },
+  knownPlayers() {
+    try { return JSON.parse(localStorage.getItem(LS_KNOWN) || "[]"); } catch { return []; }
+  },
+  // Simula um SEGUNDO jogador/dispositivo neste mesmo navegador (só p/ demo local).
+  simulateSecondPlayer() {
+    const id = crypto.randomUUID ? crypto.randomUUID() : uid("p-");
+    localStorage.setItem(LS_PLAYER, id);
+    this.remember(id);
+    WalletService.ensure(id);
+    return id;
+  },
+  switchTo(id) { localStorage.setItem(LS_PLAYER, id); WalletService.ensure(id); }
+};
+
+// ---------- 2. WalletService (centavos) ----------
+const WalletService = {
+  _readAll() { try { return JSON.parse(localStorage.getItem(LS_WALLETS) || "{}"); } catch { return {}; } },
+  _writeAll(o) { localStorage.setItem(LS_WALLETS, JSON.stringify(o)); },
+  ensure(playerId) {
+    const all = this._readAll();
+    // primeiro acesso: R$10,00. NUNCA recriar no refresh (só se inexistente).
+    if (all[playerId] === undefined) { all[playerId] = INITIAL_BALANCE_CENTS; this._writeAll(all); }
+    return all[playerId];
+  },
+  getBalanceCents(playerId) { return this.ensure(playerId); },
+  // retorna {ok, error?}
+  debit(playerId, cents) {
+    cents = Math.round(cents);
+    if (!Number.isInteger(cents) || cents <= 0) return { ok: false, error: "Valor inválido." };
+    const all = this._readAll();
+    const cur = all[playerId] ?? INITIAL_BALANCE_CENTS;
+    if (cents > cur) return { ok: false, error: "Saldo insuficiente." };
+    const next = cur - cents;
+    if (next < 0) return { ok: false, error: "Operação resultaria em saldo negativo." };
+    all[playerId] = next; this._writeAll(all);
+    return { ok: true, balance: next };
+  },
+  credit(playerId, cents) {
+    cents = Math.round(cents);
+    if (!Number.isInteger(cents) || cents <= 0) return { ok: false, error: "Valor inválido." };
+    const all = this._readAll();
+    all[playerId] = (all[playerId] ?? INITIAL_BALANCE_CENTS) + cents;
+    this._writeAll(all);
+    return { ok: true, balance: all[playerId] };
+  },
+  demoTopup(playerId, cents) { return this.credit(playerId, cents); },
+  // FUTURO: async apiGetBalance() { const r = await fetch("/api/saldo"); ... }
+};
+
+// ---------- 3. BackendAdapter (hoje: localStorage; futuro: fetch) ----------
+const BackendAdapter = {
+  _read() { try { return JSON.parse(localStorage.getItem(LS_BETS) || "[]"); } catch { return []; } },
+  _write(bets) { localStorage.setItem(LS_BETS, JSON.stringify(bets)); },
+
+  // FUTURO: POST /api/apostas { valor_centavos, lado }
+  async apiCreateBet({ creatorId, valueCents, creatorSide }) {
+    valueCents = Math.round(valueCents);
+    // validações
+    if (!creatorId) return { ok: false, error: "Jogador não identificado." };
+    if (!Number.isInteger(valueCents) || valueCents <= 0) return { ok: false, error: "Valor deve ser maior que zero." };
+    if (valueCents < MIN_BET_CENTS) return { ok: false, error: "Aposta mínima de R$ 1,00." };
+    if (creatorSide !== "LADO_1" && creatorSide !== "LADO_2") return { ok: false, error: "Escolha um lado." };
+    if (valueCents > WalletService.getBalanceCents(creatorId)) return { ok: false, error: "Aposta maior que o saldo." };
+
+    const d = WalletService.debit(creatorId, valueCents);
+    if (!d.ok) return { ok: false, error: d.error };
+
+    const bets = this._read();
+    const bet = {
+      id: uid("bet-"), valueCents, creatorId, creatorSide,
+      opponentId: null, opponentSide: null,
+      status: "AGUARDANDO_OPONENTE",
+      winnerSide: null, winnerId: null,
+      paid: false, createdAt: nowISO(), finishedAt: null,
+    };
+    bets.unshift(bet); this._write(bets);
+    return { ok: true, bet };
+  },
+
+  // FUTURO: GET /api/apostas
+  async apiListBets() { return this._read(); },
+
+  // FUTURO: POST /api/apostas/:id/entrar
+  async apiJoinBet({ betId, playerId }) {
+    const bets = this._read();
+    const bet = bets.find((b) => b.id === betId);
+    if (!bet) return { ok: false, error: "Aposta não encontrada." };
+    // impedir alteração de aposta já aceita / finalizada
+    if (bet.status === "FINALIZADA") return { ok: false, error: "Aposta já finalizada." };
+    if (bet.status !== "AGUARDANDO_OPONENTE") return { ok: false, error: "Aposta não está mais disponível." };
+    // regra fundamental: 2 jogadores diferentes; nunca contra si mesmo
+    if (bet.creatorId === playerId) return { ok: false, error: "Você não pode aceitar a própria aposta." };
+    if (bet.opponentId) return { ok: false, error: "Aposta já possui oponente." };
+    if (valueInvalid(bet.valueCents)) return { ok: false, error: "Valor da aposta inválido." };
+    if (bet.valueCents > WalletService.getBalanceCents(playerId)) return { ok: false, error: "Saldo insuficiente para entrar." };
+
+    const d = WalletService.debit(playerId, bet.valueCents);
+    if (!d.ok) return { ok: false, error: d.error };
+
+    bet.opponentId = playerId;
+    bet.opponentSide = oppositeSide(bet.creatorSide); // oponente fica sempre com o lado oposto
+    bet.status = "EM_ANDAMENTO";
+    this._write(bets);
+
+    // Sorteio logo após fechar a partida (com pequena pausa p/ UX ver "EM ANDAMENTO").
+    // Em produção isso seria POST /api/apostas/:id/finalizar no SERVIDOR.
+    setTimeout(() => { BackendAdapter.apiFinalizeBet({ betId }).then(() => UI.refresh()); }, 1400);
+    return { ok: true, bet };
+  },
+
+  // FUTURO: POST /api/apostas/:id/finalizar (servidor sorteia + paga em transação)
+  async apiFinalizeBet({ betId }) {
+    const bets = this._read();
+    const bet = bets.find((b) => b.id === betId);
+    if (!bet) return { ok: false, error: "Aposta não encontrada." };
+    if (bet.status === "FINALIZADA") return { ok: false, error: "Aposta já finalizada." };
+    if (bet.status !== "EM_ANDAMENTO") return { ok: false, error: "Aposta ainda aguarda oponente." };
+    if (!bet.opponentId || bet.creatorId === bet.opponentId) return { ok: false, error: "Participantes inválidos." };
+    // impedir múltiplos pagamentos
+    if (bet.paid) { bet.status = "FINALIZADA"; this._write(bets); return { ok: false, error: "Prêmio já pago." }; }
+
+    const winnerSide = MatchEngine.drawWinner(); // 50/50
+    const winnerId = winnerSide === bet.creatorSide ? bet.creatorId : bet.opponentId;
+    const pot = bet.valueCents * 2;
+
+    const c = WalletService.credit(winnerId, pot);
+    if (!c.ok) return { ok: false, error: "Falha ao creditar prêmio." };
+
+    bet.winnerSide = winnerSide; bet.winnerId = winnerId;
+    bet.paid = true; bet.status = "FINALIZADA"; bet.finishedAt = nowISO();
+    this._write(bets);
+    UI.onMatchFinished(bet);
+    return { ok: true, bet };
+  },
+};
+function valueInvalid(v) { return !Number.isInteger(v) || v <= 0 || v < MIN_BET_CENTS; }
+
+// ---------- 4. MatchEngine (protótipo: aleatório 50/50) ----------
+const MatchEngine = {
+  drawWinner() {
+    // Em produção: RNG do servidor, auditável, sem influência do cliente.
+    try {
+      const buf = new Uint32Array(1);
+      crypto.getRandomValues(buf);
+      return buf[0] % 2 === 0 ? "LADO_1" : "LADO_2";
+    } catch { return Math.random() < 0.5 ? "LADO_1" : "LADO_2"; }
+  },
+};
+
+// ---------- 5. HistoryService ----------
+const HistoryService = {
+  // FUTURO: GET /api/historico
+  async apiGetHistory(playerId) {
+    const bets = await BackendAdapter.apiListBets();
+    return bets.filter((b) => b.creatorId === playerId || b.opponentId === playerId);
+  },
+};
+
+// ---------- 6. UI ----------
+const UI = {
+  me: null, filter: "abertas", mySideChoice: "LADO_1", lastBetCount: 0,
+  init() {
+    this.me = IdentityService.getOrCreatePlayerId();
+    WalletService.ensure(this.me);
+    this.bind(); this.syncValor(); this.refresh();
+    window.addEventListener("storage", (e) => {
+      if ([LS_BETS, LS_WALLETS, LS_PLAYER].includes(e.key)) {
+        this.me = localStorage.getItem(LS_PLAYER) || this.me;
+        this.refresh(false);
+      }
+    });
+  },
+  bind() {
+    const $ = (id) => document.getElementById(id);
+    $("side1").onclick = () => this.pickSide("LADO_1");
+    $("side2").onclick = () => this.pickSide("LADO_2");
+    document.querySelectorAll(".quick button[data-v]").forEach((b) => {
+      b.onclick = () => {
+        document.querySelectorAll(".quick button").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        $("valorInput").value = fmtCents(Number(b.dataset.v));
+        this.syncValor();
+      };
+    });
+    $("btnMax").onclick = () => { $("valorInput").value = fmtCents(WalletService.getBalanceCents(this.me)); this.syncValor(); };
+    $("valorInput").addEventListener("input", () => this.syncValor());
+    $("btnCriar").onclick = () => this.onCreate();
+    $("btnSimular").onclick = () => {
+      const id = IdentityService.simulateSecondPlayer();
+      this.me = id; this.toast(`2º jogador simulado: <b>${shortId(id)}</b> com ${fmtCents(1000)}.`, "ok"); this.refresh();
+    };
+    $("btnTrocar").onclick = () => {
+      const known = IdentityService.knownPlayers();
+      if (known.length < 2) { this.toast("Há apenas 1 jogador neste navegador. Use “Simular 2º jogador”."); return; }
+      const other = known.find((k) => k !== this.me) || known[0];
+      IdentityService.switchTo(other); this.me = other;
+      this.toast(`Trocado para jogador <b>${shortId(other)}</b>.`); this.refresh();
+    };
+    $("btnCopyId").onclick = async () => {
+      try { await navigator.clipboard.writeText(this.me); this.toast("ID copiado.", "ok"); }
+      catch { this.toast("ID: " + this.me); }
+    };
+    $("btnReset").onclick = () => {
+      if (!confirm("Zerar apostas demo deste navegador? (saldos mantidos)")) return;
+      localStorage.setItem(LS_BETS, "[]"); this.refresh();
+    };
+    $("btnRecarregar").onclick = () => { WalletService.demoTopup(this.me, 1000); this.refresh(); this.toast(`+${fmtCents(1000)} demo creditados.`, "ok"); };
+    document.querySelectorAll(".filters button").forEach((b) => {
+      b.onclick = () => {
+        document.querySelectorAll(".filters button").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active"); this.filter = b.dataset.f; this.refresh(false);
+      };
+    });
+    $("modalOk").onclick = () => $("modalBg").classList.remove("show");
+    $("modalBg").onclick = (e) => { if (e.target.id === "modalBg") e.target.classList.remove("show"); };
+  },
+  pickSide(s) {
+    this.mySideChoice = s;
+    document.getElementById("side1").classList.toggle("selected", s === "LADO_1");
+    document.getElementById("side2").classList.toggle("selected", s === "LADO_2");
+  },
+  currentValorCents() { return parseBRLtoCents(document.getElementById("valorInput").value); },
+  syncValor() {
+    const c = this.currentValorCents();
+    document.getElementById("btnCriarValor").textContent = Number.isFinite(c) ? fmtCents(Math.max(0, c)) : "—";
+  },
+  async onCreate() {
+    const cents = this.currentValorCents();
+    if (!Number.isFinite(cents)) return this.toast("Digite um valor válido. Ex: R$ 5,00.", "err");
+    const r = await BackendAdapter.apiCreateBet({ creatorId: this.me, valueCents: cents, creatorSide: this.mySideChoice });
+    if (!r.ok) return this.toast(r.error, "err");
+    this.toast(`Aposta de <b>${fmtCents(cents)}</b> no <b>${this.mySideChoice === "LADO_1" ? "LADO 1" : "LADO 2"}</b> criada. Aguardando oponente…`, "ok");
+    this.refresh();
+  },
+  async onJoin(betId) {
+    const r = await BackendAdapter.apiJoinBet({ betId, playerId: this.me });
+    if (!r.ok) return this.toast(r.error, "err");
+    this.toast("Você entrou na partida! Sorteando…", "ok");
+    this.refresh();
+  },
+  onMatchFinished(bet) {
+    const won = bet.winnerId === this.me;
+    const involved = bet.creatorId === this.me || bet.opponentId === this.me;
+    // mostra modal só se eu participei (evita spam em outras abas/jogadores)
+    if (involved) {
+      document.getElementById("modalEmoji").textContent = won ? "🏆" : "💥";
+      document.getElementById("modalTitle").textContent = won ? `Você venceu ${fmtCents(bet.valueCents * 2)}!` : "Não foi dessa vez";
+      document.getElementById("modalDesc").textContent =
+        `${bet.winnerSide === "LADO_1" ? "LADO 1" : "LADO 2"} sorteado · pote de ${fmtCents(bet.valueCents * 2)}. ${won ? "Prêmio creditado no seu saldo." : "Valor perdido. Tente novamente."}`;
+      document.getElementById("modalBg").classList.add("show");
+    }
+  },
+  toast(html, kind) {
+    const z = document.getElementById("toasts");
+    const d = document.createElement("div");
+    d.className = "toast" + (kind === "err" ? " err" : kind === "ok" ? " ok" : "");
+    d.innerHTML = html;
+    z.appendChild(d);
+    setTimeout(() => { d.style.opacity = "0"; setTimeout(() => d.remove(), 300); }, 3400);
+  },
+  async refresh(scroll = true) {
+    const $ = (id) => document.getElementById(id);
+    $("playerShort").textContent = shortId(this.me);
+    $("playerUuid").textContent = shortId(this.me) + "…";
+    $("playerFull").textContent = "";
+    $("saldoValor").innerHTML = fmtCents(WalletService.getBalanceCents(this.me)) + " <small>fake · demo</small>";
+
+    const all = await BackendAdapter.apiListBets();
+    const mine = await HistoryService.apiGetHistory(this.me);
+
+    // lista conforme filtro
+    let list = [...all];
+    if (this.filter === "abertas") list = list.filter((b) => b.status === "AGUARDANDO_OPONENTE");
+    if (this.filter === "minhas") list = list.filter((b) => b.creatorId === this.me || b.opponentId === this.me);
+    if (this.filter === "finalizadas") list = list.filter((b) => b.status === "FINALIZADA");
+
+    const box = $("bets");
+    if (!list.length) {
+      box.innerHTML = `<div class="bet" style="text-align:center;color:var(--muted)">Nenhuma aposta aqui. Crie a primeira ao lado 👈<br><small style="font-size:12px">Dica: clique em “🎭 Simular 2º jogador” para testar o 1v1 sozinho.</small></div>`;
+    } else {
+      box.innerHTML = "";
+      for (const b of list) box.appendChild(this.betCard(b));
+    }
+
+    // histórico
+    const h = $("hist");
+    if (!mine.length) h.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Sem apostas ainda.</td></tr>`;
+    else h.innerHTML = mine.map((b) => {
+      const mySide = b.creatorId === this.me ? b.creatorSide : b.opponentSide;
+      const st = b.status.replace("_", " ");
+      const isWin = b.status === "FINALIZADA" && b.winnerId === this.me;
+      const isLoss = b.status === "FINALIZADA" && b.winnerId !== this.me;
+      const res = b.status !== "FINALIZADA" ? "—"
+        : `${b.winnerSide === "LADO_1" ? "LADO 1" : "LADO 2"} · <span class="${isWin ? "pos" : "neg"}">${isWin ? "GANHOU " + fmtCents(b.valueCents * 2) : "PERDEU " + fmtCents(b.valueCents)}</span>`;
+      return `<tr><td><code>${b.id}</code></td><td><b>${fmtCents(b.valueCents)}</b></td>
+        <td>${mySide === "LADO_1" ? "LADO 1" : mySide ? "LADO 2" : "—"}</td>
+        <td><span class="status st-${b.status}">${st}</span></td><td>${res}</td>
+        <td style="color:var(--muted)">${new Date(b.finishedAt || b.createdAt).toLocaleString("pt-BR")}</td></tr>`;
+    }).join("");
+  },
+  betCard(b) {
+    const isMine = b.creatorId === this.me;
+    const canJoin = b.status === "AGUARDANDO_OPONENTE" && !isMine;
+    const d = document.createElement("div");
+    d.className = "bet";
+    const stLabel = b.status.replace(/_/g, " ");
+    const oppSide = oppositeSide(b.creatorSide);
+    d.innerHTML = `
+      <div class="bet-top">
+        <div class="valor">${fmtCents(b.valueCents)} <small style="font-size:11px;color:var(--muted)">· pote ${fmtCents(b.valueCents * 2)}</small></div>
+        <span class="status st-${b.status}">${stLabel}</span>
+      </div>
+      <div class="versus">
+        <div class="tag ${b.creatorSide === "LADO_1" ? "l1" : "l2"} ${b.status === "FINALIZADA" && b.winnerSide === b.creatorSide ? "win" : ""}">
+          ${b.creatorSide === "LADO_1" ? "LADO 1" : "LADO 2"}<small>${isMine ? "você (criador)" : "criador " + shortId(b.creatorId)}</small></div>
+        <b style="color:var(--muted)">VS</b>
+        <div class="tag ${oppSide === "LADO_1" ? "l1" : "l2"} ${b.status === "FINALIZADA" && b.winnerSide === oppSide ? "win" : ""}">
+          ${oppSide === "LADO_1" ? "LADO 1" : "LADO 2"}<small>${b.opponentId ? ((b.opponentId === this.me ? "você" : "oponente " + shortId(b.opponentId))) : "aguardando…"}</small></div>
+      </div>
+      <div class="meta"><span>ID <code>${b.id}</code></span><span>criada em ${new Date(b.createdAt).toLocaleString("pt-BR")}</span>
+      ${b.status === "FINALIZADA" ? `<span>vencedor: <b style="color:var(--green)">${b.winnerSide === "LADO_1" ? "LADO 1" : "LADO 2"}${b.winnerId === this.me ? " (você)" : ""}</b></span>` : ""}</div>
+      <div class="bet-actions"></div>`;
+    const actions = d.querySelector(".bet-actions");
+    if (canJoin) {
+      const btn = document.createElement("button");
+      btn.className = "btn blue";
+      btn.textContent = `Entrar com ${oppSide === "LADO_1" ? "LADO 1" : "LADO 2"} · ${fmtCents(b.valueCents)}`;
+      btn.onclick = () => this.onJoin(b.id);
+      actions.appendChild(btn);
+    } else if (isMine && b.status === "AGUARDANDO_OPONENTE") {
+      const s = document.createElement("span");
+      s.style.cssText = "font-size:12.5px;color:var(--muted)";
+      s.textContent = "Sua aposta está visível para oponentes. (Você não pode aceitar a própria aposta.)";
+      actions.appendChild(s);
+    } else if (b.status === "EM_ANDAMENTO") {
+      const s = document.createElement("span");
+      s.style.cssText = "font-size:12.5px;color:#9db9ff";
+      s.textContent = "Partida em andamento — sorteando…";
+      actions.appendChild(s);
+    } else if (b.status === "FINALIZADA") {
+      const s = document.createElement("span");
+      s.style.cssText = "font-size:12.5px;color:var(--muted)";
+      s.textContent = b.winnerId === this.me ? "✅ Você venceu esta." : "🏁 Finalizada.";
+      actions.appendChild(s);
+    }
+    return d;
+  },
+};
+
+document.addEventListener("DOMContentLoaded", () => UI.init());
+</script>
+</body>
+</html>
